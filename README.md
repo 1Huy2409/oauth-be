@@ -7,14 +7,14 @@
 - Create env file from .env.example then edit: 
     cp .env.example .env 
 
-- First build project
+- First build project:
     docker-compose up --build
 
-- In case project has new libs, install libs
+- In case project has new libs, install libs:
     docker-compose exec backend npm install
 
-- Dev mode with hot reload base on volumes
+- Dev mode with hot reload base on volumes:
     docker-compose up
 
-- Stop container
+- Stop container:
     docker-compose down
