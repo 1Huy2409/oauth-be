@@ -1,17 +1,20 @@
-# Pull code from Github
-git clone https://github.com/1Huy2409/oauth-be.git
+# OAuth 2.0 Backend Server
 
-# Create env file from .env.example then edit
-cp .env.example .env 
+## Dev Instruct
+- Pull code from Github: 
+    git clone https://github.com/1Huy2409/oauth-be.git
 
-# First build project
-docker-compose up --build
+- Create env file from .env.example then edit: 
+    cp .env.example .env 
 
-# In case project has new libs, install libs
-docker-compose exec backend npm install
+- First build project
+    docker-compose up --build
 
-# Dev mode with hot reload base on volumes
-docker-compose up
+- In case project has new libs, install libs
+    docker-compose exec backend npm install
 
-# Stop container
-docker-compose down
+- Dev mode with hot reload base on volumes
+    docker-compose up
+
+- Stop container
+    docker-compose down
