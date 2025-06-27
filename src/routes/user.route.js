@@ -1,5 +1,5 @@
 import { Router } from "express"
-import asyncHandler from "../middleware/asyncHandler.js";
+import asyncHandler from "../middlewares/asyncHandler.js";
 export default class UserRouter {
     constructor() {
         this.router = Router()
