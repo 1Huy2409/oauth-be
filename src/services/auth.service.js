@@ -1,86 +1,117 @@
-import { ConflictRequestError, AuthFailureError, BadRequestError, NotFoundError } from "../handlers/error.response.js";
+import {
+  ConflictRequestError,
+  AuthFailureError,
+  BadRequestError,
+  NotFoundError,
+} from "../handlers/error.response.js";
 export default class AuthService {
-    constructor(User, AuthUtil)
-    {
-        this.userModel = User
-        this.authUtil = AuthUtil
+  constructor(User, AuthUtil) {
+    this.userModel = User;
+    this.authUtil = AuthUtil;
+  }
+  register = async (data) => {
+    // check email exist
+    const existingEmail = await this.userModel.findOne({ email: data.email });
+    if (existingEmail) {
+      throw new ConflictRequestError("This email already exist");
     }
-    register = async (data) => {
-        // check email exist
-        const existingEmail = await this.userModel.findOne({email: data.email});
-        if (existingEmail)
-        {
-            throw new ConflictRequestError("This email already exist");
-        }
-        const existingUsername = await this.userModel.findOne({username: data.username});
-        if (existingUsername)
-        {
-            throw new ConflictRequestError("This username already exist");
-        }
-        const hashedPassword = await this.authUtil.hashPassword(data.password);
-        const newUser = new this.userModel(
-            {
-                fullname: data.fullname, 
-                email: data.email,
-                username: data.username, 
-                password: hashedPassword,
-                loginMethod: 'local',
-                role: 'User'
-            }
-        )
-        await newUser.save();
-        const { id, fullname, email, username, role } = newUser;
-        const user = { id, fullname, email, username, role };
-        if (!user)
-        {
-            throw new BadRequestError("Client Bad Request!");
-        }
-        return user;
+    const existingUsername = await this.userModel.findOne({
+      username: data.username,
+    });
+    if (existingUsername) {
+      throw new ConflictRequestError("This username already exist");
     }
-    login = async (data) => {
-        const user = await this.userModel.findOne({username: data.username});
-        if (user)
-        {
-            const { id, email, username, loginMethod, role } = user;
-            // compare password
-            const check = await this.authUtil.comparePassword(data.password, user.password);
-            if (!check)
-            {
-                throw new AuthFailureError("Password is incorrect!");
-            }
-            else {
-                // init accesstoken and refreshtoken => push refreshtoken to array  
-                const accessToken = this.authUtil.signAccessToken({id, email, username, loginMethod, role});
-                const refreshToken = this.authUtil.signRefreshToken({id, email, username, loginMethod, role});
-                return {
-                    data: {
-                        accessToken: accessToken, 
-                        refreshToken: refreshToken
-                    },
-                    msg: "Login successfully!"
-                };
-            }
-        }
-        else {
-            throw new NotFoundError("Username not found!");
-        }
+    const hashedPassword = await this.authUtil.hashPassword(data.password);
+    const newUser = new this.userModel({
+      fullname: data.fullname,
+      email: data.email,
+      username: data.username,
+      password: hashedPassword,
+      loginMethod: "local",
+      role: "User",
+    });
+    await newUser.save();
+    const { id, fullname, email, username, role } = newUser;
+    const user = { id, fullname, email, username, role };
+    if (!user) {
+      throw new BadRequestError("Client Bad Request!");
     }
-    refreshToken = async (req) => {
-        const refreshToken = req.cookies.refreshToken;
-        if (refreshToken)
-        {
-            // this token is not expired => sign new accessToken and refreshToken
-            const { id, fullname, email, username, role } = this.authUtil.verifyRefreshToken(refreshToken);
-            const newPayload = { id, fullname, email, username, role };
-            const newAccessToken = this.authUtil.signAccessToken(newPayload);
-            const newRefreshToken = this.authUtil.signRefreshToken(newPayload);
-            return {
-                data: { accessToken: newAccessToken, refreshToken: newRefreshToken },
-                msg: "This is new access token!"
-            }
-        }
-        else {
-            throw new AuthFailureError("Refresh token not found!");
-        }
+    return user;
+  };
+  login = async (data) => {
+    const user = await this.userModel.findOne({ username: data.username });
+    if (user) {
+      const { id, email, username, loginMethod, role } = user;
+      // compare password
+      const check = await this.authUtil.comparePassword(
+        data.password,
+        user.password
+      );
+      if (!check) {
+        throw new AuthFailureError("Password is incorrect!");
+      } else {
+        // init accesstoken and refreshtoken => push refreshtoken to array
+        const accessToken = this.authUtil.signAccessToken({
+          id,
+          email,
+          username,
+          role,
+        });
+        const refreshToken = this.authUtil.signRefreshToken({
+          id,
+          email,
+          username,
+          role,
+        });
+        return {
+          data: {
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+          },
+          msg: "Login successfully!",
+        };
+      }
+    } else {
+      throw new NotFoundError("Username not found!");
     }
+  };
+  googleLogin = async (user) => {
+    if (!user) {
+      throw new BadRequestError("This user doesnt exist!");
+    }
+    const findUser = await this.userModel.findOne({ email: user.email });
+    if (!findUser) {
+      throw new BadRequestError("This user doesnt exist!");
+    }
+    const payload = {
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      role: user.role,
+    };
+    const accessToken = this.authUtil.signAccessToken(payload);
+    const refreshToken = this.authUtil.signRefreshToken(payload);
+    const data = {
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+    };
+    return data;
+  };
+  refreshToken = async (req) => {
+    const refreshToken = req.cookies.refreshToken;
+    if (refreshToken) {
+      // this token is not expired => sign new accessToken and refreshToken
+      const { id, email, username, role } =
+        this.authUtil.verifyRefreshToken(refreshToken);
+      const newPayload = { id, email, username, role };
+      const newAccessToken = this.authUtil.signAccessToken(newPayload);
+      const newRefreshToken = this.authUtil.signRefreshToken(newPayload);
+      return {
+        data: { accessToken: newAccessToken, refreshToken: newRefreshToken },
+        msg: "This is new access token!",
+      };
+    } else {
+      throw new AuthFailureError("Refresh token not found!");
+    }
+  };
 }
