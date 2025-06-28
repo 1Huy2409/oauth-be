@@ -8,10 +8,11 @@
     cp .env.example .env 
 
 - First build project:
-    docker-compose up --build
+    docker-compose up -d
 
-- In case project has new libs, install libs:
-    docker-compose exec backend npm install
+- Rebuild:
+    docker-compose down
+    docker-compose up --build -d
 
 - Dev mode with hot reload base on volumes:
     docker-compose up
