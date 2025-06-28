@@ -1,13 +1,12 @@
 import { AuthFailureError, BadRequestError } from "../handlers/error.response.js";
 import { OK } from "../handlers/success.response.js";
 export default class AuthController {
-    constructor(AuthService)
-    {
+    constructor(AuthService) {
         this.authService = AuthService
     }
     // auth register controller
     register = async (req, res, next) => {
-        const data = 
+        const data =
         {
             fullname: req.body.fullname,
             email: req.body.email,
@@ -28,7 +27,7 @@ export default class AuthController {
             username: req.body.username,
             password: req.body.password
         }
-        const {data, msg} = await this.authService.login(credential);
+        const { data, msg } = await this.authService.login(credential);
         const { accessToken, refreshToken } = data;
         // store refreshToken in http only cookies
         res.cookie('refreshToken', refreshToken, {
@@ -44,13 +43,28 @@ export default class AuthController {
             }
         }).send(res)
     }
+
+    //auth facebook login controller
+    facebookLogin = async (req, res, next) => {
+        const { accessToken, refreshToken } = await this.authService.facebookLogin(req.user)
+        res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            secure: false,
+            sameSite: "strict",
+            expires: new Date(Date.now() + 7 * 24 * 3600000),
+        });
+        new OK({
+            message: "Login successfully!",
+            metadata: accessToken
+        }).send(res)
+    }
+
     // auth refreshToken controller
     refreshToken = async (req, res, next) => {
         try {
             // check data then return http status code
-            const {data, msg} = await this.authService.refreshToken(req);
-            if (data != null)
-                {
+            const { data, msg } = await this.authService.refreshToken(req);
+            if (data != null) {
                 const { accessToken, refreshToken } = data;
                 // store refreshToken in http only cookies
                 res.cookie('refreshToken', refreshToken, {
@@ -61,7 +75,7 @@ export default class AuthController {
                 })
                 new OK({
                     message: msg,
-                    metadata: 
+                    metadata:
                     {
                         accessToken: accessToken
                     }
@@ -70,7 +84,7 @@ export default class AuthController {
         }
         catch (error) {
             next(error);
-        }   
+        }
     }
     // auth logout controller
     logout = async (req, res, next) => {
@@ -82,8 +96,7 @@ export default class AuthController {
                     message: "Log out successfully!"
                 }).send(res)
             }
-            else
-            {
+            else {
                 throw new AuthFailureError("Refresh token not found!");
             }
         } catch (error) {
