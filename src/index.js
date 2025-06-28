@@ -6,7 +6,6 @@ import router from "./routes/index.route.js"
 import passport from "./configs/passport.config.js"
 import instanceMongoDB from "./configs/db.config.js"
 import { createRequire } from 'module'
-import rateLimit from 'express-rate-limit'
 const require = createRequire(import.meta.url)
 const session = require('express-session')
 dotenv.config()
