@@ -4,7 +4,6 @@ import AuthService from "../services/auth.service.js";
 import dotenv from 'dotenv'
 import { Strategy as GoogleStrategy } from "passport-google-oauth20"
 import { Strategy as FacebookStrategy } from 'passport-facebook';
-import AuthService from "../services/auth.service.js"
 const authService = new AuthService();
 import User from "../models/user.model.js";
 dotenv.config()
@@ -24,7 +23,13 @@ passport.use(new GoogleStrategy({
           username: profile._json.email,
           email: profile._json.email,
           password: '',
-          loginMethod: 'google'
+          loginMethod: 'google',
+          providers: {
+            google: {
+              id: profile.id,
+              email: profile._json.email,
+            }
+          }
         })
         await newUser.save()
         return cb(null, newUser)
@@ -40,7 +45,7 @@ passport.use(new GoogleStrategy({
 passport.use(new FacebookStrategy({
     clientID: process.env.FACEBOOK_CLIENT_ID,
     clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-    callbackURL: process.env.FACEBOOK_CALLBACK_URL,
+    callbackURL: process.env.FACEBOOK_CALLBACK_URL
   },
   async function(accessToken, refreshToken, profile, cb) {
     try{
@@ -50,9 +55,15 @@ passport.use(new FacebookStrategy({
         const newUser = new User ({
           fullname: profile._json.name,
           username: profile._json.email,
-          email: profile._json.email,
+          email: "",
           password: '',
           loginMethod: 'facebook',
+          providers: {
+            facebook: {
+              id: profile.id,
+              email: profile._json.email,
+            }
+          }
         })
         await newUser.save()
         return cb(null, newUser)
