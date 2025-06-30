@@ -32,7 +32,7 @@ export default class UserService {
         }
         const newUser = new this.userModel(
             {
-                name: user.name,
+                fullname: user.fullname,
                 age: user.age,
                 email: user.email,
                 username: user.username,
@@ -59,7 +59,7 @@ export default class UserService {
             }
             const hashedPassword = await this.authUtil.hashPassword(data.password);
             // update user information
-            user.name = data.name;
+            user.fullname = data.fullname;
             user.age = data.age;
             user.email = data.email;
             user.username = data.username;
