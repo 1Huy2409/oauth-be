@@ -32,6 +32,20 @@ export default class AuthRouter {
       Validate(this.authValidator.loginValidate),
       asyncHandler(this.authController.login)
     );
+    // login with google
+    this.router.get(
+      "/google",
+      passport.authenticate("google", {
+        scope: ["email", "profile"],
+        session: false,
+      })
+    );
+    // google callback
+    this.router.get(
+      "/google/callback",
+      passport.authenticate("google", { failureRedirect: "/login" }),
+      asyncHandler(this.authController.googleLogin)
+    );
     // login with facebook
     this.router.get(
       "/facebook",

@@ -4,14 +4,17 @@ import cookieParser from "cookie-parser"
 import { errorHandler } from "./handlers/error-handler.js"
 import router from "./routes/index.route.js"
 import passport from "./configs/passport.config.js"
+import cors from "cors"
 import instanceMongoDB from "./configs/db.config.js"
-import { createRequire } from 'module'
-const require = createRequire(import.meta.url)
-const session = require('express-session')
+import session from "express-session"
 dotenv.config()
 const app = express()
 const port = process.env.PORT
 instanceMongoDB.connect()
+app.use(cors({
+  origin: process.env.FRONTEND_URL,
+  credentials: true
+}))
 app.use(express.json())
 app.use(cookieParser())
 app.use(session({

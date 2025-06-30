@@ -1,4 +1,4 @@
-import { Router } from "express"
+import { Router } from "express";
 import asyncHandler from "../middlewares/asyncHandler.js";
 import UserController from "../controllers/user.controller.js";
 import UserValidator from "../validators/user.validator.js";
