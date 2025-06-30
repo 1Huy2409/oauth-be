@@ -27,7 +27,7 @@ passport.use(new GoogleStrategy({
           providers: {
             google: {
               id: profile.id,
-              email: profile._json.email,
+              email: profile._json.email
             }
           }
         })

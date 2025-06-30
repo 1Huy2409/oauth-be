@@ -30,7 +30,7 @@ export default class AuthController {
       password: req.body.password,
     };
     const { data, msg } = await this.authService.login(credential);
-    const { accessToken, refreshToken } = data;
+    const { accessToken, refreshToken, user } = data;
     // store refreshToken in http only cookies
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
@@ -42,6 +42,7 @@ export default class AuthController {
       message: msg,
       metadata: {
         accessToken: accessToken,
+        user: user
       },
     }).send(res);
   };
