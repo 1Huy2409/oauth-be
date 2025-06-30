@@ -41,7 +41,7 @@ export default class AuthService {
   login = async (data) => {
     const user = await this.userModel.findOne({ username: data.username });
     if (user) {
-      const { id, email, username, loginMethod, role } = user;
+      const { id, email, username, fullname, loginMethod, role } = user;
       // compare password
       const check = await this.authUtil.comparePassword(
         data.password,
@@ -63,10 +63,12 @@ export default class AuthService {
           username,
           role,
         });
+        const dataUser = {id, fullname, email, username}
         return {
           data: {
             accessToken: accessToken,
             refreshToken: refreshToken,
+            user: dataUser
           },
           msg: "Login successfully!",
         };
