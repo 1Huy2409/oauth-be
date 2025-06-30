@@ -63,12 +63,12 @@ export default class AuthService {
           username,
           role,
         });
-        const dataUser = {id, fullname, email, username}
+        const dataUser = { id, fullname, email, username };
         return {
           data: {
             accessToken: accessToken,
             refreshToken: refreshToken,
-            user: dataUser
+            user: dataUser,
           },
           msg: "Login successfully!",
         };
@@ -100,27 +100,27 @@ export default class AuthService {
     return data;
   };
   facebookLogin = async (user) => {
-        if (!user) {
-            throw new BadRequestError("This user doesnt exist!");
-        }
-        const findUser = await this.userModel.findOne({ email: user.email });
-        if (!findUser) {
-            throw new BadRequestError("This user doesnt exist!");
-        }
-        const payload = {
-            id: user.id,
-            email: user.email,
-            username: user.username,
-            role: user.role,
-        };
-        const accessToken = this.authUtil.signAccessToken(payload);
-        const refreshToken = this.authUtil.signRefreshToken(payload);
-        const data = {
-            accessToken: accessToken,
-            refreshToken: refreshToken,
-        };
-        return data;
+    if (!user) {
+      throw new BadRequestError("This user doesnt exist!");
+    }
+    const findUser = await this.userModel.findOne({ email: user.email });
+    if (!findUser) {
+      throw new BadRequestError("This user doesnt exist!");
+    }
+    const payload = {
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      role: user.role,
     };
+    const accessToken = this.authUtil.signAccessToken(payload);
+    const refreshToken = this.authUtil.signRefreshToken(payload);
+    const data = {
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+    };
+    return data;
+  };
   refreshToken = async (req) => {
     const refreshToken = req.cookies.refreshToken;
     if (refreshToken) {
