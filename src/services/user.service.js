@@ -71,14 +71,20 @@ export default class UserService {
             throw new NotFoundError("User not found!");
         }
     }
-    deleteUser = async (id) => {
+    deleteUser = async (id, currentId) => {
+        if (currentId === id)
+        {
+            throw new ConflictRequestError("Cannot delete yourself!")
+        }
         const user = await this.userModel.findOne({_id: id});
         if (!user)
         {
             throw new NotFoundError("User not found!");
         }
+        if (user.role === 'Admin') {
+            throw new ConflictRequestError("Cannot delete admin user!");
+        }
         await this.userModel.deleteOne({_id: id});
-        await this.voteModel.deleteOne({userId: id});
         return user;
     }
     getMe = async (id) => {

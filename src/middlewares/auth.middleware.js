@@ -19,8 +19,7 @@ export default class AuthMiddleware {
                 next();
             }
             catch (err) {
-                console.log("Vao day")
-                throw err;
+                throw new AuthFailureError("Token is expired")
             }
         }
         catch (error) {
@@ -32,7 +31,7 @@ export default class AuthMiddleware {
         this.checkAuth(req, res, async (err) => {
             if (err) return next(err);
             try {
-                if (req.user.role == "Admin") {
+                if (req.user.role == "admin") {
                     next();
                 }
                 else {

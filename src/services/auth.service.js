@@ -28,7 +28,7 @@ export default class AuthService {
       username: data.username,
       password: hashedPassword,
       loginMethod: "local",
-      role: "User",
+      role: "user",
     });
     await newUser.save();
     const { id, fullname, email, username, role } = newUser;
@@ -48,7 +48,7 @@ export default class AuthService {
         user.password
       );
       if (!check) {
-        throw new AuthFailureError("Password is incorrect!");
+        throw new BadRequestError("Password is incorrect!");
       } else {
         // init accesstoken and refreshtoken => push refreshtoken to array
         const accessToken = this.authUtil.signAccessToken({
@@ -63,7 +63,7 @@ export default class AuthService {
           username,
           role,
         });
-        const dataUser = { id, fullname, email, username };
+        const dataUser = { id, fullname, email, username, role };
         return {
           data: {
             accessToken: accessToken,
@@ -74,7 +74,7 @@ export default class AuthService {
         };
       }
     } else {
-      throw new NotFoundError("Username not found!");
+      throw new BadRequestError("Username not found!");
     }
   };
   googleLogin = async (user) => {
@@ -91,6 +91,7 @@ export default class AuthService {
       username: user.username,
       role: user.role,
     };
+    console.log(payload)
     const accessToken = this.authUtil.signAccessToken(payload);
     const refreshToken = this.authUtil.signRefreshToken(payload);
     const data = {
