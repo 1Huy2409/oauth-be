@@ -26,7 +26,7 @@ export default class UserRouter {
         // [GET] get user by id
         this.router.get('/:id', asyncHandler(this.AuthMiddleware.checkAdmin), asyncHandler(this.userController.getUserById));
         // [PUT] update user by id (Admin || User with same id)
-        this.router.put('/:id', asyncHandler(this.AuthMiddleware.checkAdmin), asyncHandler(this.AuthMiddleware.checkUpdateProfile), asyncHandler(this.userValidator.checkUser), asyncHandler(this.userController.putUser));
+        this.router.put('/:id', asyncHandler(this.AuthMiddleware.checkUpdateProfile), asyncHandler(this.userValidator.checkUser), asyncHandler(this.userController.putUser));
     }
     getRoute() {
         return this.router
