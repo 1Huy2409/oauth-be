@@ -48,7 +48,7 @@ export default class AuthService {
         user.password
       );
       if (!check) {
-        throw new AuthFailureError("Password is incorrect!");
+        throw new BadRequestError("Password is incorrect!");
       } else {
         // init accesstoken and refreshtoken => push refreshtoken to array
         const accessToken = this.authUtil.signAccessToken({
@@ -74,7 +74,7 @@ export default class AuthService {
         };
       }
     } else {
-      throw new NotFoundError("Username not found!");
+      throw new BadRequestError("Username not found!");
     }
   };
   googleLogin = async (user) => {
