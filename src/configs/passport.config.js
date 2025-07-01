@@ -45,7 +45,7 @@ passport.use(new GoogleStrategy({
 passport.use(new FacebookStrategy({
     clientID: process.env.FACEBOOK_CLIENT_ID,
     clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-    callbackURL: process.env.FACEBOOK_CALLBACK_URL,
+    callbackURL: process.env.FACEBOOK_CALLBACK_URL
   },
   async function(accessToken, refreshToken, profile, cb) {
     try{
@@ -55,9 +55,15 @@ passport.use(new FacebookStrategy({
         const newUser = new User ({
           fullname: profile._json.name,
           username: profile._json.email,
-          email: profile._json.email,
+          email: "",
           password: '',
           loginMethod: 'facebook',
+          providers: {
+            facebook: {
+              id: profile.id,
+              email: profile._json.email,
+            }
+          }
         })
         await newUser.save()
         return cb(null, newUser)
