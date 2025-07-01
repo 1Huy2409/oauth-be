@@ -62,18 +62,20 @@ export default class AuthController {
     }).send(res);
   };
   facebookLogin = async (req, res, next) => {
-        const { accessToken, refreshToken } = await this.authService.facebookLogin(req.user)
-        res.cookie("refreshToken", refreshToken, {
-            httpOnly: true,
-            secure: false,
-            sameSite: "strict",
-            expires: new Date(Date.now() + 7 * 24 * 3600000),
-        });
-        new OK({
-            message: "Login successfully!",
-            metadata: accessToken
-        }).send(res)
-    }
+    const { accessToken, refreshToken } = await this.authService.facebookLogin(req.user)
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "strict",
+      expires: new Date(Date.now() + 7 * 24 * 3600000),
+    });
+    // new OK({
+    //     message: "Login successfully!",
+    //     metadata: accessToken
+    // }).send(res)
+    const frontendURL = `http://localhost:5173/auth/callback?token=${accessToken}&user=${encodeURIComponent(JSON.stringify(req.user))}`
+    res.redirect(frontendURL)
+  }
   // auth refreshToken controller
   refreshToken = async (req, res, next) => {
     try {
