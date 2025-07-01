@@ -28,7 +28,7 @@ export default class AuthService {
       username: data.username,
       password: hashedPassword,
       loginMethod: "local",
-      role: "User",
+      role: "user",
     });
     await newUser.save();
     const { id, fullname, email, username, role } = newUser;
@@ -63,7 +63,7 @@ export default class AuthService {
           username,
           role,
         });
-        const dataUser = { id, fullname, email, username };
+        const dataUser = { id, fullname, email, username, role };
         return {
           data: {
             accessToken: accessToken,
@@ -91,6 +91,7 @@ export default class AuthService {
       username: user.username,
       role: user.role,
     };
+    console.log(payload)
     const accessToken = this.authUtil.signAccessToken(payload);
     const refreshToken = this.authUtil.signRefreshToken(payload);
     const data = {

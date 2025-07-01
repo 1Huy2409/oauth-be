@@ -19,8 +19,7 @@ export default class AuthMiddleware {
                 next();
             }
             catch (err) {
-                console.log("Vao day")
-                throw err;
+                throw new AuthFailureError("Token is expired")
             }
         }
         catch (error) {

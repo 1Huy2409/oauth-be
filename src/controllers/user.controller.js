@@ -40,7 +40,8 @@ import { OK } from "../handlers/success.response.js";
     };
     deleteUser = async (req, res, next) => {
         const id = req.params.id;
-        const deletedUser = await this.userService.deleteUser(id);
+        const currentId = req.user.id;
+        const deletedUser = await this.userService.deleteUser(id, currentId);
         new OK({
             message: "Deleted user successfully!",
             metadata: deletedUser

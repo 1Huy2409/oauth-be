@@ -16,7 +16,7 @@ export default class UserRouter {
     }
     setupRoutes() {
         // [GET] gell all users (Admin)
-        this.router.get('/', asyncHandler(this.AuthMiddleware.checkAdmin), asyncHandler(this.userController.getAllUsers))
+        this.router.get('/', asyncHandler(this.AuthMiddleware.checkAuth), asyncHandler(this.userController.getAllUsers))
         // [GET] get profile (Admin and User)
         this.router.get('/me', asyncHandler(this.AuthMiddleware.checkAuth), asyncHandler(this.userController.getMe));
         // [POST] create new user (Admin)
