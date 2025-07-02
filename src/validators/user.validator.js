@@ -20,7 +20,7 @@ export default class UserValidator {
                 throw new BadRequestError("Invalid email format");
             }
             // validate username
-            if (user.username.trim().length < 10) {
+            if (user.username.trim().length < 5) {
                 throw new BadRequestError("Username must be at least 5 characters");
             }
             // validate password (minlength = 5)
