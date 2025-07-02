@@ -43,7 +43,7 @@ jobs:
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-          docker pull ${{ secrets.DOCKER_USERNAME }}/oauth-be:latest
-          docker stop oauth-be-container || true
-          docker rm oauth-be-container || true
-          docker run -d -p 127.0.0.1:8000:8000 --env-file .env --name oauth-be-container ${{ secrets.DOCKER_USERNAME }}/sgroup-be:latest
+          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/oauth-be:latest
+          sudo docker stop oauth-be-container || true
+          sudo docker rm oauth-be-container || true
+          sudo docker run -d -p 127.0.0.1:8000:8000 --env-file .env --name oauth-be-container ${{ secrets.DOCKER_USERNAME }}/sgroup-be:latest
