@@ -4,6 +4,8 @@ import {
   BadRequestError,
   NotFoundError,
 } from "../handlers/error.response.js";
+import { randomToken } from "../utils/token.util.js";
+import { mailService } from "../services/mail.service.js";
 export default class AuthService {
   constructor(User, AuthUtil) {
     this.userModel = User;
@@ -91,7 +93,7 @@ export default class AuthService {
       username: user.username,
       role: user.role,
     };
-    console.log(payload)
+    console.log(payload);
     const accessToken = this.authUtil.signAccessToken(payload);
     const refreshToken = this.authUtil.signRefreshToken(payload);
     const data = {
@@ -138,5 +140,59 @@ export default class AuthService {
     } else {
       throw new AuthFailureError("Refresh token not found!");
     }
+  };
+  forgotPasswordService = async (email) => {
+    const user = await this.userModel.findOne({ email: email });
+    if (!user) {
+      throw new NotFoundError("Email not found!");
+    }
+    // email exist => create random token
+    const token = randomToken();
+    const expires = new Date(Date.now() + 10 * 60 * 1000);
+    user.passwordResetToken = token;
+    user.passwordResetExpiration = expires;
+    await user.save();
+
+    // call send mail
+    // emailFrom, emailTo, emailSubject, emailText
+    const objectMail = {
+      emailFrom: process.env.SMTP_USER,
+      emailTo: email,
+      emailSubject: "RESET PASSWORD",
+      emailText: `Use this OTP code to reset your password: ${token}. This OTP code will expire in 10 minutes.`,
+    };
+    console.log(objectMail);
+    try {
+      await mailService.sendEmail(objectMail);
+      return {
+        success: true,
+        message: "Send mail successfully!",
+      };
+    } catch (error) {
+      console.error("Mail error:", error);
+      return {
+        success: false,
+        errMessage: error.message,
+      };
+    }
+  };
+  resetPasswordService = async (data) => {
+    const user = await this.userModel.findOne({
+      email: data.email,
+      passwordResetToken: data.passwordResetToken,
+      passwordResetExpiration: { $gt: new Date() },
+    });
+    if (!user) {
+      return false;
+    }
+    // check valid token
+    const hashedNewPassword = await this.authUtil.hashPassword(
+      data.newPassword
+    );
+    user.password = hashedNewPassword;
+    user.passwordResetToken = null;
+    user.passwordResetExpiration = null;
+    await user.save();
+    return true;
   };
 }

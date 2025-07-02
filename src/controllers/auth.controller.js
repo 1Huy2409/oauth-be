@@ -42,7 +42,7 @@ export default class AuthController {
       message: msg,
       metadata: {
         accessToken: accessToken,
-        user: user
+        user: user,
       },
     }).send(res);
   };
@@ -60,22 +60,26 @@ export default class AuthController {
     //   message: "Login successfully!",
     //   metadata: accessToken,
     // }).send(res);
-    const frontendURL = `http://localhost:5173/auth/callback?token=${accessToken}&user=${encodeURIComponent(JSON.stringify(req.user))}`
-    res.redirect(frontendURL)
+    const frontendURL = `http://localhost:5173/auth/callback?token=${accessToken}&user=${encodeURIComponent(
+      JSON.stringify(req.user)
+    )}`;
+    res.redirect(frontendURL);
   };
   facebookLogin = async (req, res, next) => {
-        const { accessToken, refreshToken } = await this.authService.facebookLogin(req.user)
-        res.cookie("refreshToken", refreshToken, {
-            httpOnly: true,
-            secure: false,
-            sameSite: "strict",
-            expires: new Date(Date.now() + 7 * 24 * 3600000),
-        });
-        new OK({
-            message: "Login successfully!",
-            metadata: accessToken
-        }).send(res)
-    }
+    const { accessToken, refreshToken } = await this.authService.facebookLogin(
+      req.user
+    );
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "strict",
+      expires: new Date(Date.now() + 7 * 24 * 3600000),
+    });
+    new OK({
+      message: "Login successfully!",
+      metadata: accessToken,
+    }).send(res);
+  };
   // auth refreshToken controller
   refreshToken = async (req, res, next) => {
     try {
@@ -115,6 +119,37 @@ export default class AuthController {
       }
     } catch (error) {
       next(error);
+    }
+  };
+  // auth forgot-password controller
+  forgotPasswordController = async (req, res, next) => {
+    const inputEmail = req.body.email;
+    if (!inputEmail) {
+      throw new BadRequestError("Please enter your email!");
+    }
+    const result = await this.authService.forgotPasswordService(inputEmail);
+    if (result.success) {
+      new OK({
+        message: "Send mail successfully!",
+        metadata: {},
+      }).send(res);
+    } else {
+      throw new BadRequestError("Client bad request!");
+    };
+  }
+  // auth reset-password controller
+  resetPasswordController = async (req, res, next) => {
+    const { email, passwordResetToken, newPassword } = req.body;
+    const data = { email, passwordResetToken, newPassword };
+    const result = await this.authService.resetPasswordService(data);
+    // result tra ve true hoac false
+    if (result) {
+      new OK({
+        message: "Reset password successfully!",
+        metadata: {},
+      }).send(res);
+    } else {
+      throw new BadRequestError("Client bad request!");
     }
   };
 }

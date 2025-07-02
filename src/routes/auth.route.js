@@ -71,6 +71,16 @@ export default class AuthRouter {
       asyncHandler(this.authMiddleware.checkAuth),
       asyncHandler(this.authController.logout)
     );
+    // [POST] /forgot-password
+    this.router.post(
+      "/forgot-password",
+      asyncHandler(this.authController.forgotPasswordController)
+    );
+    // [POST] /reset-password
+    this.router.post(
+      "/reset-password",
+      asyncHandler(this.authController.resetPasswordController)
+    );
   }
   getRoute() {
     return this.router;
