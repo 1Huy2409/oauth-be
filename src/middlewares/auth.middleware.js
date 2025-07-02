@@ -51,7 +51,7 @@ export default class AuthMiddleware {
             try
             {
                 const id = req.params.id;
-                if (req.user.role == "Admin")
+                if (req.user.role == "admin")
                 {
                     next();
                 }                

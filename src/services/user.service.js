@@ -44,32 +44,43 @@ export default class UserService {
         return newUser;
     }
     putUser = async (id, data) => {
-        const user = await this.userModel.findOne({_id: id});
-        if (user)
-        {
-            const emailExisting = await this.userModel.findOne({email: data.email, _id: {$ne: id}});
-            if (emailExisting)
-            {
-                throw new ConflictRequestError("This email already exists!");
-            }
-            const usernameExisting = await this.userModel.findOne({username: data.username, _id: {$ne: id}});
-            if (usernameExisting)
-            {
-                throw new ConflictRequestError("This username already exists!");
-            }
-            const hashedPassword = await this.authUtil.hashPassword(data.password);
-            // update user information
-            user.fullname = data.fullname;
-            user.age = data.age;
-            user.email = data.email;
-            user.username = data.username;
-            user.password = hashedPassword;
-            await user.save();
-            return user;
-        }
-        else {
+        const user = await this.userModel.findOne({ _id: id });
+        if (!user) {
             throw new NotFoundError("User not found!");
         }
+
+        // Kiểm tra email nếu có gửi lên
+        if (data.email && data.email !== user.email) {
+            const emailExisting = await this.userModel.findOne({ email: data.email, _id: { $ne: id } });
+            if (emailExisting) {
+                throw new ConflictRequestError("This email already exists!");
+            }
+            user.email = data.email;
+        }
+
+        // Kiểm tra username nếu có gửi lên
+        if (data.username && data.username !== user.username) {
+            const usernameExisting = await this.userModel.findOne({ username: data.username, _id: { $ne: id } });
+            if (usernameExisting) {
+                throw new ConflictRequestError("This username already exists!");
+            }
+            user.username = data.username;
+        }
+
+        // Chỉ update fullname nếu có gửi lên
+        if (data.fullname) {
+            user.fullname = data.fullname;
+        }
+
+        // Chỉ update password nếu có gửi lên
+        if (data.password) {
+            user.password = await this.authUtil.hashPassword(data.password);
+        }
+
+        // Có thể bổ sung các trường khác tương tự
+
+        await user.save();
+        return user;
     }
     deleteUser = async (id, currentId) => {
         if (currentId === id)
