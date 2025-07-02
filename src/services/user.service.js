@@ -33,7 +33,6 @@ export default class UserService {
         const newUser = new this.userModel(
             {
                 fullname: user.fullname,
-                age: user.age,
                 email: user.email,
                 username: user.username,
                 password: hashedPassword,
