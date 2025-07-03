@@ -12,7 +12,6 @@ export default class AuthService {
     this.authUtil = AuthUtil;
   }
   register = async (data) => {
-    // check email exist
     const existingEmail = await this.userModel.findOne({ email: data.email });
     if (existingEmail) {
       throw new ConflictRequestError("This email already exist");
@@ -43,8 +42,7 @@ export default class AuthService {
   login = async (data) => {
     const user = await this.userModel.findOne({ username: data.username });
     if (user) {
-      const { id, email, username, fullname, loginMethod, role } = user;
-      // compare password
+      const { id, email, username, fullname, role } = user;
       const check = await this.authUtil.comparePassword(
         data.password,
         user.password
@@ -52,7 +50,6 @@ export default class AuthService {
       if (!check) {
         throw new BadRequestError("Password is incorrect!");
       } else {
-        // init accesstoken and refreshtoken => push refreshtoken to array
         const accessToken = this.authUtil.signAccessToken({
           id,
           email,
@@ -124,10 +121,16 @@ export default class AuthService {
     };
     return data;
   };
+  logout = async (token, res) => {
+    if (!token)
+    {
+      throw new AuthFailureError("Refresh Token not found!")
+    }
+    res.clearCookie("refreshToken");
+  }
   refreshToken = async (req) => {
     const refreshToken = req.cookies.refreshToken;
     if (refreshToken) {
-      // this token is not expired => sign new accessToken and refreshToken
       const { id, email, username, role } =
         this.authUtil.verifyRefreshToken(refreshToken);
       const newPayload = { id, email, username, role };
@@ -146,15 +149,12 @@ export default class AuthService {
     if (!user) {
       throw new NotFoundError("Email not found!");
     }
-    // email exist => create random token
     const token = randomToken();
     const expires = new Date(Date.now() + 10 * 60 * 1000);
     user.passwordResetToken = token;
     user.passwordResetExpiration = expires;
     await user.save();
 
-    // call send mail
-    // emailFrom, emailTo, emailSubject, emailText
     const objectMail = {
       emailFrom: process.env.SMTP_USER,
       emailTo: email,
@@ -185,7 +185,7 @@ export default class AuthService {
     if (!user) {
       return false;
     }
-    // check valid token
+
     const hashedNewPassword = await this.authUtil.hashPassword(
       data.newPassword
     );

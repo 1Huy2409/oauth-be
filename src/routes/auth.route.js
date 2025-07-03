@@ -32,7 +32,7 @@ export default class AuthRouter {
       Validate(this.authValidator.loginValidate),
       asyncHandler(this.authController.login)
     );
-    // login with google
+    // [GET] /google
     this.router.get(
       "/google",
       passport.authenticate("google", {
@@ -40,13 +40,13 @@ export default class AuthRouter {
         session: false,
       })
     );
-    // google callback
+    // [GET] /google/callback
     this.router.get(
       "/google/callback",
       passport.authenticate("google", { failureRedirect: "/login" }),
       asyncHandler(this.authController.googleLogin)
     );
-    // login with facebook
+    // [GET] /facebook
     this.router.get(
       "/facebook",
       passport.authenticate("facebook", {
@@ -54,7 +54,7 @@ export default class AuthRouter {
         session: false,
       })
     );
-    // facebook callback
+    // [GET] /facebook/callback
     this.router.get(
       "/facebook/callback",
       passport.authenticate("facebook", { failureRedirect: "/login" }),

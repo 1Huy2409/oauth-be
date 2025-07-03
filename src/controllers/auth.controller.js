@@ -7,7 +7,7 @@ export default class AuthController {
   constructor(AuthService) {
     this.authService = AuthService;
   }
-  // auth register controller
+
   register = async (req, res, next) => {
     const data = {
       fullname: req.body.fullname,
@@ -23,7 +23,7 @@ export default class AuthController {
       },
     }).send(res);
   };
-  // auth login controller
+  
   login = async (req, res, next) => {
     const credential = {
       username: req.body.username,
@@ -31,12 +31,11 @@ export default class AuthController {
     };
     const { data, msg } = await this.authService.login(credential);
     const { accessToken, refreshToken, user } = data;
-    // store refreshToken in http only cookies
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: false,
       sameSite: "strict",
-      expires: new Date(Date.now() + 365 * 24 * 3600000),
+      expires: new Date(Date.now() + 7 * 24 * 3600000),
     });
     new OK({
       message: msg,
@@ -46,6 +45,7 @@ export default class AuthController {
       },
     }).send(res);
   };
+  
   googleLogin = async (req, res, next) => {
     const { accessToken, refreshToken } = await this.authService.googleLogin(
       req.user
@@ -56,15 +56,12 @@ export default class AuthController {
       sameSite: "strict",
       expires: new Date(Date.now() + 7 * 24 * 3600000),
     });
-    // new OK({
-    //   message: "Login successfully!",
-    //   metadata: accessToken,
-    // }).send(res);
     const frontendURL = `http://localhost:5173/auth/callback?token=${accessToken}&user=${encodeURIComponent(
       JSON.stringify(req.user)
     )}`;
     res.redirect(frontendURL);
   };
+  
   facebookLogin = async (req, res, next) => {
     const { accessToken, refreshToken } = await this.authService.facebookLogin(
       req.user
@@ -80,48 +77,34 @@ export default class AuthController {
       metadata: accessToken,
     }).send(res);
   };
-  // auth refreshToken controller
+  
   refreshToken = async (req, res, next) => {
-    try {
-      // check data then return http status code
-      const { data, msg } = await this.authService.refreshToken(req);
-      if (data != null) {
-        const { accessToken, refreshToken } = data;
-        // store refreshToken in http only cookies
-        res.cookie("refreshToken", refreshToken, {
-          httpOnly: true,
-          secure: false,
-          sameSite: "strict",
-          expires: new Date(Date.now() + 365 * 24 * 3600000),
-        });
-        new OK({
-          message: msg,
-          metadata: {
-            accessToken: accessToken,
-          },
-        }).send(res);
-      }
-    } catch (error) {
-      next(error);
+    const { data, msg } = await this.authService.refreshToken(req);
+    if (data != null) {
+      const { accessToken, refreshToken } = data;
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: false,
+        sameSite: "strict",
+        expires: new Date(Date.now() + 7 * 24 * 3600000),
+      });
+      new OK({
+        message: msg,
+        metadata: {
+          accessToken: accessToken,
+        },
+      }).send(res);
     }
   };
-  // auth logout controller
+  
   logout = async (req, res, next) => {
-    try {
-      const refreshToken = req.cookies.refreshToken;
-      if (refreshToken) {
-        res.clearCookie("refreshToken");
-        new OK({
-          message: "Log out successfully!",
-        }).send(res);
-      } else {
-        throw new AuthFailureError("Refresh token not found!");
-      }
-    } catch (error) {
-      next(error);
-    }
+    const refreshToken = req.cookies.refreshToken;
+    await this.authService.logout(refreshToken, res)
+    new OK({
+      message: "Log out successfully!",
+    }).send(res);
   };
-  // auth forgot-password controller
+
   forgotPasswordController = async (req, res, next) => {
     const inputEmail = req.body.email;
     if (!inputEmail) {
@@ -137,12 +120,11 @@ export default class AuthController {
       throw new BadRequestError("Client bad request!");
     };
   }
-  // auth reset-password controller
+
   resetPasswordController = async (req, res, next) => {
     const { email, passwordResetToken, newPassword } = req.body;
     const data = { email, passwordResetToken, newPassword };
     const result = await this.authService.resetPasswordService(data);
-    // result tra ve true hoac false
     if (result) {
       new OK({
         message: "Reset password successfully!",
